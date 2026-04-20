@@ -1,0 +1,33 @@
+{
+  "name": "helplytics-ai-server",
+  "version": "1.0.0",
+  "description": "Helplytics AI Backend - MERN Monorepo Server",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon --verbose server.js",
+    "debug": "node --inspect server.js",
+    "seed:messages": "node seedMessages.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "helplytics",
+    "ai",
+    "help",
+    "community"
+  ],
+  "author": "Batch 16",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.4.0",
+    "natural": "^7.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
