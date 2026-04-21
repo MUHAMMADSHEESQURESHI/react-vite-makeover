@@ -26,13 +26,10 @@ connectDB();
 
 // Middleware - CORS (must be before routes)
 app.use(cors({
-  origin: 'https://react-vite-makeover-2rsh.vercel.app',
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-
-// Handle preflight for all routes
 app.options('*', cors());
 
 // JSON parsing (must be before routes)
