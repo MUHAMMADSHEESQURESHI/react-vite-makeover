@@ -25,18 +25,10 @@ console.log('--- INITIATING DB CONNECTION ---');
 connectDB();
 
 // Middleware - CORS (must be before routes)
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow localhost with any port in development
-    if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
+  origin: 'https://react-vite-makeover-2rsh.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
