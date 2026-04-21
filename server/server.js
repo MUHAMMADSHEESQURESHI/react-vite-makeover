@@ -113,27 +113,27 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`
-╔═══════════════════════════════════════════════════════════╗
-║                                                           ║
-║   🚀 Helplytics AI Server                                 ║
-║                                                           ║
-║   Server running on port ${PORT}                            ║
-║   Environment: ${process.env.NODE_ENV || 'development'}                             ║
-║   Client URL: ${process.env.CLIENT_URL || 'http://localhost:5173'}                    ║
-║                                                           ║
-║   API Endpoints:                                          ║
-║   - GET    /                                              ║
-║   - POST   /api/users/onboard                             ║
-║   - GET    /api/users/:id                                 ║
-║   - GET    /api/help-requests                             ║
-║   - POST   /api/help-requests                             ║
-║   - GET    /api/leaderboard                               ║
-║                                                           ║
-╚═══════════════════════════════════════════════════════════╝
-  `);
-});
+// Start server - commented out for Vercel deployment
+// app.listen(PORT, () => {
+//   console.log(`
+// ╔═══════════════════════════════════════════════════════════╗
+// ║                                                           ║
+// ║   🚀 Helplytics AI Server                                 ║
+// ║                                                           ║
+// ║   Server running on port ${PORT}                            ║
+// ║   Environment: ${process.env.NODE_ENV || 'development'}                             ║
+// ║   Client URL: ${process.env.CLIENT_URL || 'http://localhost:5173'}                    ║
+// ║                                                           ║
+// ║   API Endpoints:                                          ║
+// ║   - GET    /                                              ║
+// ║   - POST   /api/users/onboard                             ║
+// ║   - GET    /api/users/:id                                 ║
+// ║   - GET    /api/help-requests                             ║
+// ║   - POST   /api/help-requests                             ║
+// ║   - GET    /api/leaderboard                               ║
+// ║                                                           ║
+// ╚═══════════════════════════════════════════════════════════╝
+//   `);
+// });
 
 export default app;
