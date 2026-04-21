@@ -10,42 +10,27 @@ import messageRoutes from './routes/messageRoutes.js';
 // Load environment variables
 dotenv.config();
 
-console.log('=== SERVER STARTUP ===');
-console.log('NODE_ENV:', process.env.NODE_ENV || 'development');
-console.log('PORT:', process.env.PORT || '5000 (default)');
-console.log('MONGO_URI:', process.env.MONGO_URI ? '***' + process.env.MONGO_URI.slice(-20) : 'NOT SET');
-console.log('CLIENT_URL:', process.env.CLIENT_URL || 'http://localhost:5173 (default)');
-
 // Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB
-console.log('--- INITIATING DB CONNECTION ---');
-connectDB();
-
-// Middleware - CORS (must be before routes)
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: true,
-}));
-
-// Handle preflight OPTIONS requests explicitly
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
+// ============== CORS MIDDLEWARE (MUST BE FIRST) ==============
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://react-vite-makeover-2rsh.vercel.app');
+  res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   res.header('Access-Control-Max-Age', '86400');
-  res.status(204).send();
+
+  // Handle preflight OPTIONS - return immediately
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  next();
 });
 
-// JSON parsing (must be before routes)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Request logging middleware (always on for debugging)
+// ============== REQUEST LOGGING ==============
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   if (req.method !== 'GET' && req.body && Object.keys(req.body).length > 0) {
@@ -54,7 +39,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check endpoint
+// ============== JSON PARSING ==============
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ============== CONNECT TO MONGODB ==============
+console.log('=== SERVER STARTUP ===');
+console.log('NODE_ENV:', process.env.NODE_ENV || 'development');
+console.log('MONGO_URI:', process.env.MONGO_URI ? '***' + process.env.MONGO_URI.slice(-20) : 'NOT SET');
+connectDB();
+
+// ============== HEALTH CHECK ==============
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -63,13 +58,13 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes
+// ============== API ROUTES ==============
 app.use('/api/users', userRoutes);
 app.use('/api/help-requests', helpRequestRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/messages', messageRoutes);
 
-// 404 handler
+// ============== 404 HANDLER ==============
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -77,18 +72,13 @@ app.use((req, res) => {
   });
 });
 
-// Global error handler with detailed logging
+// ============== GLOBAL ERROR HANDLER ==============
 app.use((err, req, res, next) => {
-  console.error('=== GLOBAL ERROR HANDLER ===');
-  console.error('Error type:', err.name);
-  console.error('Error message:', err.message);
-  console.error('Error stack:', err.stack);
-  console.error('Request:', req.method, req.path);
-  console.error('Request body:', req.body);
+  console.error('=== GLOBAL ERROR ===');
+  console.error('Error:', err.message);
+  console.error('Stack:', err.stack);
 
-  // Mongoose specific errors
   if (err.name === 'ValidationError') {
-    console.error('Mongoose Validation Error:', err.message);
     return res.status(400).json({
       success: false,
       message: 'Validation Error',
@@ -97,7 +87,6 @@ app.use((err, req, res, next) => {
   }
 
   if (err.name === 'CastError') {
-    console.error('Mongoose CastError (invalid ID):', err.message);
     return res.status(400).json({
       success: false,
       message: 'Invalid ID format',
@@ -111,27 +100,5 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server - commented out for Vercel deployment
-// app.listen(PORT, () => {
-//   console.log(`
-// ╔═══════════════════════════════════════════════════════════╗
-// ║                                                           ║
-// ║   🚀 Helplytics AI Server                                 ║
-// ║                                                           ║
-// ║   Server running on port ${PORT}                            ║
-// ║   Environment: ${process.env.NODE_ENV || 'development'}                             ║
-// ║   Client URL: ${process.env.CLIENT_URL || 'http://localhost:5173'}                    ║
-// ║                                                           ║
-// ║   API Endpoints:                                          ║
-// ║   - GET    /                                              ║
-// ║   - POST   /api/users/onboard                             ║
-// ║   - GET    /api/users/:id                                 ║
-// ║   - GET    /api/help-requests                             ║
-// ║   - POST   /api/help-requests                             ║
-// ║   - GET    /api/leaderboard                               ║
-// ║                                                           ║
-// ╚═══════════════════════════════════════════════════════════╝
-//   `);
-// });
-
+// Export for Vercel serverless
 export default app;
