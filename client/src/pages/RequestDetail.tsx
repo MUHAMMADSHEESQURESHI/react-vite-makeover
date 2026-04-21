@@ -49,10 +49,18 @@ const RequestDetail = () => {
 
         if (result.success) {
           setRequest(result.data);
+        } else {
+          toast.error("Request not found");
+          navigate("/explore");
         }
       } catch (error: any) {
         console.error("Fetch error:", error);
-        toast.error(error.response?.data?.message || "Failed to load request details");
+        const status = error.response?.status;
+        if (status === 404 || status === 400) {
+          toast.error("Request not found or invalid ID");
+        } else {
+          toast.error(error.response?.data?.message || "Failed to load request details");
+        }
         navigate("/explore");
       } finally {
         setLoading(false);

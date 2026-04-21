@@ -10,20 +10,27 @@ const links: NavItem[] = [
 ];
 
 const Leaderboard = () => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [roleFilter, setRoleFilter] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   const fetchLeaderboard = async () => {
     setLoading(true);
+    setError("");
     try {
       const result = await leaderboardAPI.get(10, roleFilter || undefined);
       if (result.success) {
-        setLeaderboard(result.data);
+        setLeaderboard(result.data || []);
+      } else {
+        setError("Failed to load leaderboard");
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to load leaderboard");
+    } catch (err: any) {
+      console.error("Leaderboard error:", err);
+      const msg = err.response?.data?.message || err.message || "Failed to load leaderboard";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -35,8 +42,9 @@ const Leaderboard = () => {
       if (result.success) {
         setStats(result.data);
       }
-    } catch (error) {
-      console.error("Failed to load stats:", error);
+    } catch (err: any) {
+      console.error("Stats error:", err);
+      // Don't show toast for stats - it's optional
     }
   };
 
@@ -122,13 +130,25 @@ const Leaderboard = () => {
               </select>
             </div>
 
-            {loading && <p>Loading leaderboard...</p>}
+            {loading && <p className="text-center text-muted">Loading leaderboard...</p>}
 
-            {!loading && leaderboard.length === 0 && (
-              <p className="text-center">No helpers found. Be the first to help!</p>
+            {!loading && error && (
+              <div className="panel" style={{ textAlign: "center", padding: "2rem" }}>
+                <p className="text-red-600">{error}</p>
+                <p className="text-sm text-muted mt-2">Make sure the backend server is running and connected to the database.</p>
+              </div>
             )}
 
-            {!loading && leaderboard.length > 0 && (
+            {!loading && !error && leaderboard.length === 0 && (
+              <div className="panel" style={{ textAlign: "center", padding: "2rem" }}>
+                <p className="text-muted">No helpers found. Be the first to help!</p>
+                <Link className="btn btn-primary mt-4" to="/onboarding">
+                  Join the community
+                </Link>
+              </div>
+            )}
+
+            {!loading && !error && leaderboard.length > 0 && (
               <div className="rank-list">
                 {leaderboard.map((entry, index) => (
                   <div className="rank-item" key={entry.user.id}>

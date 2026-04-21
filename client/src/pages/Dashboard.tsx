@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import TopBar, { type NavItem } from "@/components/TopBar";
-import { RequestCard, sampleRequests } from "@/components/RequestCards";
+import { RequestCard, type RequestCardData } from "@/components/RequestCards";
+import { helpRequestAPI } from "@/lib/api";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const links: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", key: "dashboard" },
@@ -13,10 +15,44 @@ const links: NavItem[] = [
 
 const Dashboard = () => {
   const [userName, setUserName] = useState<string>("");
+  const [recentRequests, setRecentRequests] = useState<RequestCardData[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
 
   useEffect(() => {
     const storedName = localStorage.getItem("userName");
     setUserName(storedName || "there");
+  }, []);
+
+  useEffect(() => {
+    const fetchRecentRequests = async () => {
+      setLoadingRequests(true);
+      try {
+        const result = await helpRequestAPI.getAll({});
+        if (result.success) {
+          const mapped: RequestCardData[] = result.data.slice(0, 5).map((req: any) => ({
+            id: req._id,
+            category: req.category || "Other",
+            urgency: req.urgency || "Medium",
+            status: req.status || "Open",
+            statusVariant: req.status === "solved" ? "success" : "default",
+            urgencyVariant: req.urgency === "high" ? "urgent" : "default",
+            title: req.title,
+            description: req.description,
+            tags: req.tags || [],
+            author: req.createdBy?.name || "Anonymous",
+            meta: `${req.createdAt ? new Date(req.createdAt).toLocaleDateString() : "Recent"} • ${req.assignedTo ? "1 helper assigned" : "Open for help"}`,
+          }));
+          setRecentRequests(mapped);
+        }
+      } catch (error: any) {
+        console.error("Failed to load recent requests:", error);
+        toast.error("Failed to load recent requests");
+      } finally {
+        setLoadingRequests(false);
+      }
+    };
+
+    fetchRecentRequests();
   }, []);
 
   return (
@@ -84,9 +120,13 @@ const Dashboard = () => {
             </Link>
           </div>
           <div className="stack">
-            {sampleRequests.map((r) => (
-              <RequestCard key={r.id} r={r} />
-            ))}
+            {loadingRequests ? (
+              <p className="text-center text-muted">Loading recent requests...</p>
+            ) : recentRequests.length === 0 ? (
+              <p className="text-center text-muted">No recent requests found. Check out the Explore page!</p>
+            ) : (
+              recentRequests.map((r) => <RequestCard key={r.id} r={r} />)
+            )}
           </div>
         </div>
         <div className="stack">
