@@ -14,17 +14,26 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ============== CORS MIDDLEWARE (MUST BE FIRST) ==============
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://react-vite-makeover-2rsh.vercel.app');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  res.header('Access-Control-Max-Age', '86400');
+// ============== CORS MIDDLEWARE (MUST BE FIRST - BEFORE ANYTHING) ==============
+const CORS_CONFIG = {
+  origin: 'https://react-vite-makeover-2rsh.vercel.app',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  maxAge: 86400,
+};
 
-  // Handle preflight OPTIONS - return immediately
+// Global CORS middleware - handles preflight BEFORE routes
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', CORS_CONFIG.origin);
+  res.setHeader('Access-Control-Allow-Credentials', CORS_CONFIG.credentials.toString());
+  res.setHeader('Access-Control-Allow-Methods', CORS_CONFIG.methods.join(', '));
+  res.setHeader('Access-Control-Allow-Headers', CORS_CONFIG.allowedHeaders.join(', '));
+  res.setHeader('Access-Control-Max-Age', CORS_CONFIG.maxAge.toString());
+
+  // Handle preflight OPTIONS - return immediately with 204
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return res.status(204).send();
   }
 
   next();
